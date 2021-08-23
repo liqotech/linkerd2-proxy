@@ -27,7 +27,8 @@ use tonic::{
 };
 use tower::retry::budget::Budget;
 use tracing::instrument::Instrument;
-use tracing::{debug, debug_span, error, trace, warn};
+use tracing::{debug, debug_span, error, trace, warn, info};
+use dns_lookup::lookup_addr;
 
 #[derive(Clone, Debug)]
 pub struct Client<S, R> {
@@ -133,8 +134,23 @@ where
 
     fn call(&mut self, t: T) -> Self::Future {
         let LookupAddr(addr) = t.param();
+
+        // Split addr in name and port
+        let mut host = addr.to_string();
+        let v: Vec<_> = (&host).split(":").collect();
+        let name_addr = v[0].to_string();
+        let port = v[1];
+        
+        // Translate IP into name
+        match get_name_from_ip(&name_addr) {
+            Ok(name) => host = format!("{}:{}", name, port),
+            Err(e) => warn!("{}", e)
+        }
+
+        info!("Host is {}", host);
+
         let request = api::GetDestination {
-            path: addr.to_string(),
+            path: host,
             context_token: self.context_token.clone(),
             ..Default::default()
         };
@@ -148,6 +164,21 @@ where
         };
         ProfileFuture { inner: Some(inner) }
     }
+}
+
+fn get_name_from_ip(addr: &String) -> Result<String,String> {
+    // Parse String to IpAddr
+    let ip: std::net::IpAddr = match addr.parse() {
+        Ok(ip) => ip,
+        Err(_) => return Err("Cannot parse address".to_string())
+    };
+
+    // Retrieve hostname
+    match lookup_addr(&ip) {
+        Ok(hostname) => return Ok(hostname),
+        Err(_) => return Err("Cannot retrieve hostname".to_string())
+
+    };
 }
 
 impl<S, R> Future for ProfileFuture<S, R>
