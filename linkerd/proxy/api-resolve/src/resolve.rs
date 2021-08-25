@@ -77,9 +77,10 @@ where
         
         info!("Cluster ID = {}", self.cluster_id.clone());
 
-        let req = api::GetDestination {
+        let req = api::GetEndpoints {
             path: addr.to_string(),
             context_token: self.context_token.clone(),
+            cluster_id: self.cluster_id.clone(),
             ..Default::default()
         };
         let mut client = self.service.clone();

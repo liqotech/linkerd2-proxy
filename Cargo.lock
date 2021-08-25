@@ -879,7 +879,7 @@ dependencies = [
  "linkerd-trace-context",
  "linkerd-tracing",
  "linkerd-transport-header",
- "linkerd2-proxy-api",
+ "linkerd2-proxy-api 0.1.18 (git+https://github.com/liqotech/linkerd2-proxy-api?branch=liqo/endpoints)",
  "pin-project 1.0.8",
  "procinfo",
  "prost-types",
@@ -946,7 +946,7 @@ dependencies = [
  "linkerd-app-test",
  "linkerd-channel",
  "linkerd-metrics",
- "linkerd2-proxy-api",
+ "linkerd2-proxy-api 0.1.18 (git+https://github.com/linkerd/linkerd2-proxy-api?tag=v0.1.18)",
  "regex",
  "rustls",
  "socket2 0.3.19",
@@ -1267,7 +1267,7 @@ dependencies = [
  "linkerd-proxy-core",
  "linkerd-stack",
  "linkerd-tls",
- "linkerd2-proxy-api",
+ "linkerd2-proxy-api 0.1.18 (git+https://github.com/liqotech/linkerd2-proxy-api?branch=liqo/endpoints)",
  "pin-project 1.0.8",
  "prost",
  "tonic",
@@ -1363,7 +1363,7 @@ dependencies = [
  "linkerd-metrics",
  "linkerd-stack",
  "linkerd-tls",
- "linkerd2-proxy-api",
+ "linkerd2-proxy-api 0.1.18 (git+https://github.com/liqotech/linkerd2-proxy-api?branch=liqo/endpoints)",
  "pin-project 1.0.8",
  "tokio",
  "tonic",
@@ -1400,7 +1400,7 @@ dependencies = [
  "linkerd-proxy-transport",
  "linkerd-stack",
  "linkerd-tls",
- "linkerd2-proxy-api",
+ "linkerd2-proxy-api 0.1.18 (git+https://github.com/liqotech/linkerd2-proxy-api?branch=liqo/endpoints)",
  "pin-project 1.0.8",
  "prost-types",
  "rand",
@@ -1484,7 +1484,7 @@ dependencies = [
  "linkerd-error",
  "linkerd-proxy-api-resolve",
  "linkerd-stack",
- "linkerd2-proxy-api",
+ "linkerd2-proxy-api 0.1.18 (git+https://github.com/liqotech/linkerd2-proxy-api?branch=liqo/endpoints)",
  "pin-project 1.0.8",
  "prost-types",
  "quickcheck",
@@ -1653,6 +1653,21 @@ dependencies = [
 name = "linkerd2-proxy-api"
 version = "0.1.18"
 source = "git+https://github.com/linkerd/linkerd2-proxy-api?tag=v0.1.18#4c424593d934a22635c06706a3c399d0875a49a1"
+dependencies = [
+ "h2",
+ "http",
+ "prost",
+ "prost-types",
+ "quickcheck",
+ "rand",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
+name = "linkerd2-proxy-api"
+version = "0.1.18"
+source = "git+https://github.com/liqotech/linkerd2-proxy-api?branch=liqo/endpoints#3cc9152f0f80321a2ef9f68993335e363e076a77"
 dependencies = [
  "h2",
  "http",
