@@ -24,6 +24,7 @@ use tracing::{debug, info, trace};
 pub struct Resolve<S> {
     service: DestinationClient<S>,
     context_token: String,
+    cluster_id: String,
 }
 
 // === impl Resolve ===
@@ -37,10 +38,11 @@ where
     <S::ResponseBody as HttpBody>::Error: Into<Error> + Send,
     S::Future: Send,
 {
-    pub fn new(svc: S, context_token: String) -> Self {
+    pub fn new(svc: S, context_token: String, cluster_id: String) -> Self {
         Self {
             service: DestinationClient::new(svc),
             context_token,
+            cluster_id
         }
     }
 }
@@ -72,6 +74,8 @@ where
     fn call(&mut self, target: T) -> Self::Future {
         let ConcreteAddr(addr) = target.param();
         debug!(dst = %addr, context = %self.context_token, "Resolving");
+        
+        info!("Cluster ID = {}", self.cluster_id.clone());
 
         let req = api::GetDestination {
             path: addr.to_string(),

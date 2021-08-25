@@ -37,6 +37,7 @@ impl Config {
         dns: dns::Resolver,
         metrics: metrics::ControlHttp,
         identity: Option<LocalCrtKey>,
+        cluster_id: String,
     ) -> Result<Dst, Error> {
         let addr = self.control.addr.clone();
         let backoff = BackoffUnlessInvalidArgument(self.control.connect.backoff);
@@ -45,7 +46,7 @@ impl Config {
         Ok(Dst {
             addr,
             profiles: profiles::Client::new(svc.clone(), backoff, self.context.clone()),
-            resolve: recover::Resolve::new(backoff, api::Resolve::new(svc, self.context)),
+            resolve: recover::Resolve::new(backoff, api::Resolve::new(svc, self.context, cluster_id)),
         })
     }
 }

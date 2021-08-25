@@ -28,7 +28,10 @@ use linkerd_channel::into_stream::IntoStream;
 use std::pin::Pin;
 use tokio::{sync::mpsc, time::Duration};
 use tracing::instrument::Instrument;
-use tracing::{debug, info, info_span};
+use tracing::{debug, info, info_span, warn};
+
+use kube::{Client, api::Api};
+use k8s_openapi::api::core::v1::ConfigMap;
 
 /// Spawns a sidecar proxy.
 ///
@@ -123,11 +126,18 @@ impl Config {
             let bind = bind_admin.clone();
             info_span!("tap").in_scope(|| tap.build(bind, identity.local(), drain_rx.clone()))?
         };
+        
+        // get cluster ID
+        let mut cluster_id = String::from("");
+        match get_cluster_id().await {
+            Ok(id) => cluster_id = id,
+            Err(e) => warn!("Error: {}", e) 
+        };
 
         let dst = {
             let metrics = metrics.control.clone();
             let dns = dns.resolver.clone();
-            info_span!("dst").in_scope(|| dst.build(dns, metrics, identity.local()))
+            info_span!("dst").in_scope(|| dst.build(dns, metrics, identity.local(), cluster_id))
         }?;
 
         let oc_collector = {
@@ -208,6 +218,29 @@ impl Config {
             start_proxy,
             tap,
         })
+    }
+}
+
+async fn get_cluster_id() -> Result<String,String> {
+    // Create a k8s client
+    let client = match Client::try_default().await {
+        Ok(client) => client,
+        Err(e) => return Err(e.to_string())
+    };
+   
+    // Get all ConfigMaps in the Liqo namespace
+    let cms: Api<ConfigMap> = Api::namespaced(client, "liqo");
+   
+    // Get cluster-id ConfigMap
+    let cm: ConfigMap = match cms.get("cluster-id").await {
+        Ok(cm) => cm,
+        Err(e) => return Err(e.to_string())
+    };
+    
+    // Extract cluster-id from the ConfigMap
+    match cm.data.get("cluster-id") {
+        Some(cluster_id) => return Ok(cluster_id.to_string()),
+        None => return Err("Cannot find cluster id into ConfigMap data".to_string())
     }
 }
 

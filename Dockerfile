@@ -61,6 +61,7 @@ ARG SKIP_IDENTITY_WRAPPER
 WORKDIR /linkerd
 COPY --from=build /out/linkerd2-proxy /usr/lib/linkerd/linkerd2-proxy
 ENV LINKERD2_PROXY_LOG=warn,linkerd=info
+RUN apt-get update && apt-get install -y openssl
 RUN if [ -n "$SKIP_IDENTITY_WRAPPER" ] ; then \
   rm -f /usr/bin/linkerd2-proxy-run && \
   ln /usr/lib/linkerd/linkerd2-proxy /usr/bin/linkerd2-proxy-run ; \
