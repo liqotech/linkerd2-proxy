@@ -30,8 +30,8 @@ use tokio::{sync::mpsc, time::Duration};
 use tracing::instrument::Instrument;
 use tracing::{debug, info, info_span, warn};
 
-use kube::{Client, api::Api};
-use k8s_openapi::api::core::v1::ConfigMap;
+// use kube::{Client, api::Api};
+// use k8s_openapi::api::core::v1::ConfigMap;
 
 /// Spawns a sidecar proxy.
 ///
@@ -129,9 +129,14 @@ impl Config {
         
         // get cluster ID
         let mut cluster_id = String::from("");
-        match get_cluster_id().await {
+        // match get_cluster_id().await {
+        //     Ok(id) => cluster_id = id,
+        //     Err(e) => warn!("Error: {}", e) 
+        // };
+        
+        match std::env::var("LIQO_CLUSTER_ID") {
             Ok(id) => cluster_id = id,
-            Err(e) => warn!("Error: {}", e) 
+            Err(e) => warn!("Cannot read Cluster ID: {}", e)
         };
 
         let dst = {
@@ -221,28 +226,28 @@ impl Config {
     }
 }
 
-async fn get_cluster_id() -> Result<String,String> {
-    // Create a k8s client
-    let client = match Client::try_default().await {
-        Ok(client) => client,
-        Err(e) => return Err(e.to_string())
-    };
+// async fn get_cluster_id() -> Result<String,String> {
+//     // Create a k8s client
+//     let client = match Client::try_default().await {
+//         Ok(client) => client,
+//         Err(e) => return Err(e.to_string())
+//     };
    
-    // Get all ConfigMaps in the Liqo namespace
-    let cms: Api<ConfigMap> = Api::namespaced(client, "liqo");
+//     // Get all ConfigMaps in the Liqo namespace
+//     let cms: Api<ConfigMap> = Api::namespaced(client, "liqo");
    
-    // Get cluster-id ConfigMap
-    let cm: ConfigMap = match cms.get("cluster-id").await {
-        Ok(cm) => cm,
-        Err(e) => return Err(e.to_string())
-    };
+//     // Get cluster-id ConfigMap
+//     let cm: ConfigMap = match cms.get("cluster-id").await {
+//         Ok(cm) => cm,
+//         Err(e) => return Err(e.to_string())
+//     };
     
-    // Extract cluster-id from the ConfigMap
-    match cm.data.get("cluster-id") {
-        Some(cluster_id) => return Ok(cluster_id.to_string()),
-        None => return Err("Cannot find cluster id into ConfigMap data".to_string())
-    }
-}
+//     // Extract cluster-id from the ConfigMap
+//     match cm.data.get("cluster-id") {
+//         Some(cluster_id) => return Ok(cluster_id.to_string()),
+//         None => return Err("Cannot find cluster id into ConfigMap data".to_string())
+//     }
+// }
 
 impl App {
     pub fn admin_addr(&self) -> Local<ServerAddr> {
